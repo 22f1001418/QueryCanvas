@@ -6,6 +6,7 @@ import { CodeBlock } from '../components/CodeBlock';
 import { AnimationControls } from '../components/AnimationControls';
 import { useAnimation } from '../hooks/useAnimation';
 import { motion } from 'framer-motion';
+import { ERDiagram, type TableSchema, type Relationship } from '../components/ERDiagram';
 
 // Custom tables for join demos
 const tableA = {
@@ -30,6 +31,33 @@ const tableB = {
     [4, 'Finance'],
   ] as (string | number | null)[][],
 };
+
+// ER Diagram schemas
+const schemas: TableSchema[] = [
+  {
+    name: 'employees',
+    columns: [
+      { name: 'id', type: 'INT (PK)' },
+      { name: 'name', type: 'VARCHAR' },
+      { name: 'dept_id', type: 'INT (FK)' },
+    ],
+  },
+  {
+    name: 'departments',
+    columns: [
+      { name: 'id', type: 'INT (PK)' },
+      { name: 'dept_name', type: 'VARCHAR' },
+    ],
+  },
+];
+
+const relationships: Relationship[] = [
+  {
+    from: { table: 'employees', column: 'dept_id' },
+    to: { table: 'departments', column: 'id' },
+    type: 'many-to-one',
+  },
+];
 
 type JoinType = 'INNER' | 'LEFT' | 'RIGHT' | 'FULL' | 'CROSS';
 
@@ -192,6 +220,8 @@ export function JoinsPage() {
         </p>
       </div>
 
+      <ERDiagram tables={schemas} relationships={relationships} />
+
       <AnimationControls
         step={step} maxSteps={joinTypes.length - 1}
         isPlaying={isPlaying} onPlay={play} onPause={pause}
@@ -247,7 +277,7 @@ export function JoinsPage() {
 
       {/* Try it yourself */}
       <QueryPlayground
-        initialQuery="SELECT e.name, d.dept_name FROM employees e INNER JOIN departments d ON e.department = d.dept_name;"
+        initialQuery="SELECT e.name, d.dept_name FROM employees e INNER JOIN departments d ON e.dept_id = d.id;"
       />
 
     </div>

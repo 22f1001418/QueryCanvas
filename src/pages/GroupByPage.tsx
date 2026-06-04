@@ -22,7 +22,7 @@ const groupSteps = [
     detail: 'GROUP BY department creates one row per unique department. COUNT(*) then counts how many employees are in each group.',
     result: {
       columns: ['department', 'cnt'],
-      rows: [['Engineering', 3], ['Marketing', 2], ['Sales', 2], ['HR', 1]],
+      rows: [['Engineering', 3], ['HR', 1], ['Marketing', 2], ['Sales', 2]],
     },
   },
   {
@@ -31,7 +31,7 @@ const groupSteps = [
     detail: 'GROUP BY creates groups, then AVG() calculates average salary within each group. Engineering has 3 employees with average 95,000.',
     result: {
       columns: ['department', 'avg_sal'],
-      rows: [['Engineering', 95000], ['Marketing', 70000], ['Sales', 71500], ['HR', 71000]],
+      rows: [['Engineering', 95000], ['HR', 71000], ['Marketing', 70000], ['Sales', 71500]],
     },
   },
   {
@@ -46,10 +46,10 @@ const groupSteps = [
   {
     sql: `SELECT department, COUNT(*) AS cnt\nFROM employees\nWHERE salary > 70000\nGROUP BY department\nHAVING COUNT(*) >= 2;`,
     desc: 'WHERE + GROUP BY + HAVING',
-    detail: 'First, WHERE filters rows (salary > 70k), then GROUP BY groups by department, then HAVING filters groups (count >= 2).',
+    detail: 'First, WHERE filters rows (salary > 70k): Engineering gets 3, Marketing 1, Sales 1, HR 1. Then HAVING COUNT(*) >= 2 keeps only Engineering.',
     result: {
       columns: ['department', 'cnt'],
-      rows: [['Engineering', 3], ['Sales', 2]],
+      rows: [['Engineering', 3]],
     },
   },
 ];

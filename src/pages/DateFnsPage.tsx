@@ -21,31 +21,31 @@ const eventsTable = {
 
 const steps = [
   {
-    sql: `-- Current date functions\nSELECT\n  NOW()          AS right_now,\n  CURRENT_DATE   AS today,\n  CURRENT_TIME   AS time_now;`,
-    desc: 'NOW(), CURRENT_DATE, CURRENT_TIME',
+    sql: `-- Current date functions (SQLite)\nSELECT\n  datetime('now') AS right_now,\n  date('now')     AS today,\n  time('now')     AS time_now;`,
+    desc: "datetime('now'), date('now'), time('now')",
     result: {
       columns: ['right_now', 'today', 'time_now'],
       rows: [['2024-06-15 14:30:00', '2024-06-15', '14:30:00']],
     },
   },
   {
-    sql: `-- Extract parts of a date\nSELECT event_date,\n  YEAR(event_date)  AS yr,\n  MONTH(event_date) AS mo,\n  DAY(event_date)   AS dy,\n  EXTRACT(QUARTER\n    FROM event_date) AS qtr\nFROM user_events;`,
-    desc: 'YEAR, MONTH, DAY, EXTRACT',
+    sql: `-- Extract parts of a date (SQLite)\nSELECT event_date,\n  CAST(strftime('%Y', event_date) AS INTEGER) AS yr,\n  CAST(strftime('%m', event_date) AS INTEGER) AS mo,\n  CAST(strftime('%d', event_date) AS INTEGER) AS dy\nFROM user_events;`,
+    desc: 'strftime — extract year, month, day',
     result: {
-      columns: ['event_date', 'yr', 'mo', 'dy', 'qtr'],
+      columns: ['event_date', 'yr', 'mo', 'dy'],
       rows: [
-        ['2024-03-15', 2024, 3, 15, 1],
-        ['2024-03-18', 2024, 3, 18, 1],
-        ['2024-02-20', 2024, 2, 20, 1],
-        ['2024-04-01', 2024, 4, 1, 2],
-        ['2024-01-25', 2024, 1, 25, 1],
-        ['2024-05-10', 2024, 5, 10, 2],
+        ['2024-03-15', 2024, 3, 15],
+        ['2024-03-18', 2024, 3, 18],
+        ['2024-02-20', 2024, 2, 20],
+        ['2024-04-01', 2024, 4, 1],
+        ['2024-01-25', 2024, 1, 25],
+        ['2024-05-10', 2024, 5, 10],
       ],
     },
   },
   {
-    sql: `-- Date arithmetic\nSELECT event_date,\n  DATE_ADD(event_date,\n    INTERVAL 30 DAY) AS plus_30,\n  DATE_SUB(event_date,\n    INTERVAL 7 DAY)  AS minus_7\nFROM user_events;`,
-    desc: 'DATE_ADD, DATE_SUB — arithmetic',
+    sql: `-- Date arithmetic (SQLite)\nSELECT event_date,\n  date(event_date, '+30 days') AS plus_30,\n  date(event_date, '-7 days')  AS minus_7\nFROM user_events;`,
+    desc: "date(col, '+N days') — date arithmetic",
     result: {
       columns: ['event_date', 'plus_30', 'minus_7'],
       rows: [
@@ -59,8 +59,8 @@ const steps = [
     },
   },
   {
-    sql: `-- Days between dates\nSELECT user_id, event,\n  event_date, signup_date,\n  DATEDIFF(event_date,\n    signup_date) AS days_since\nFROM user_events;`,
-    desc: 'DATEDIFF — days between dates',
+    sql: `-- Days between dates (SQLite)\nSELECT user_id, event,\n  event_date, signup_date,\n  CAST(\n    julianday(event_date) -\n    julianday(signup_date)\n  AS INTEGER) AS days_since\nFROM user_events;`,
+    desc: 'julianday — days between dates',
     result: {
       columns: ['user_id', 'event', 'event_date', 'signup_date', 'days_since'],
       rows: [
@@ -74,8 +74,8 @@ const steps = [
     },
   },
   {
-    sql: `-- Monthly active users (MAU)\nSELECT\n  DATE_FORMAT(event_date,\n    '%Y-%m') AS month,\n  COUNT(DISTINCT user_id)\n    AS active_users\nFROM user_events\nGROUP BY month\nORDER BY month;`,
-    desc: 'DATE_FORMAT — MAU analysis',
+    sql: `-- Monthly active users (SQLite)\nSELECT\n  strftime('%Y-%m', event_date)\n    AS month,\n  COUNT(DISTINCT user_id)\n    AS active_users\nFROM user_events\nGROUP BY month\nORDER BY month;`,
+    desc: "strftime('%Y-%m') — MAU analysis",
     result: {
       columns: ['month', 'active_users'],
       rows: [

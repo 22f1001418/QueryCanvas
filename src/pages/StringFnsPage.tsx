@@ -35,8 +35,8 @@ const steps = [
     },
   },
   {
-    sql: `-- Extract domain from email\nSELECT email,\n  SUBSTRING(\n    email,\n    POSITION('@' IN email) + 1\n  ) AS domain\nFROM contacts;`,
-    desc: 'SUBSTRING + POSITION — extract domain',
+    sql: `-- Extract domain from email\nSELECT email,\n  SUBSTR(\n    email,\n    INSTR(email, '@') + 1\n  ) AS domain\nFROM contacts;`,
+    desc: 'SUBSTR + INSTR — extract domain',
     result: {
       columns: ['email', 'domain'],
       rows: [
@@ -49,15 +49,15 @@ const steps = [
     },
   },
   {
-    sql: `SELECT\n  LEFT(full_name, 1) AS initial,\n  RIGHT(email, 3) AS tld,\n  LENGTH(full_name) AS name_len\nFROM contacts;`,
-    desc: 'LEFT, RIGHT, LENGTH',
+    sql: `SELECT\n  SUBSTR(full_name, 1, 1) AS initial,\n  SUBSTR(email, -3) AS tld,\n  LENGTH(full_name) AS name_len\nFROM contacts;`,
+    desc: 'SUBSTR, LENGTH',
     result: {
       columns: ['initial', 'tld', 'name_len'],
       rows: [['A', 'com', 11], ['B', '.uk', 9], ['C', '.io', 11], ['D', 'ore', 14], ['E', 'ris', 12]],
     },
   },
   {
-    sql: `SELECT\n  TRIM(city) AS trimmed,\n  UPPER(city) AS upper_city,\n  LOWER(full_name) AS lower_name\nFROM contacts;`,
+    sql: `SELECT\n  TRIM(city) AS trimmed,\n  UPPER(TRIM(city)) AS upper_city,\n  LOWER(full_name) AS lower_name\nFROM contacts;`,
     desc: 'TRIM, UPPER, LOWER',
     result: {
       columns: ['trimmed', 'upper_city', 'lower_name'],

@@ -13,7 +13,7 @@ const subSteps = [
     sql: `-- Scalar subquery\nSELECT name, salary\nFROM employees\nWHERE salary > (\n  SELECT AVG(salary)\n  FROM employees\n);`,
     desc: 'Scalar subquery — filter by average',
     innerResult: { columns: ['AVG(salary)'], rows: [[79875]] },
-    outerRows: [0, 6], // Alice 95k, Grace 102k, Bob 88k
+    outerRows: [0, 1, 6], // Alice 95k, Bob 88k, Grace 102k — all above 79,875
     innerDesc: 'Inner query returns: 79,875',
   },
   {

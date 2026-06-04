@@ -82,11 +82,11 @@ const steps = [
       rows: [
         ['Grace', 'Engineering', 102000],
         ['Alice', 'Engineering', 95000],
+        ['Hank', 'HR', 71000],
         ['Carol', 'Marketing', 72000],
         ['Dave', 'Marketing', 68000],
         ['Eve', 'Sales', 78000],
         ['Frank', 'Sales', 65000],
-        ['Hank', 'HR', 71000],
       ],
     },
     funnel: null,

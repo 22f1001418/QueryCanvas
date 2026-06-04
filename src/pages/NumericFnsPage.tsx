@@ -62,8 +62,8 @@ const steps = [
     },
   },
   {
-    sql: `SELECT id,\n  MOD(id, 2) AS is_odd,\n  POWER(id, 2) AS squared,\n  SQRT(CAST(id AS FLOAT))\n    AS root\nFROM measurements;`,
-    desc: 'MOD, POWER, SQRT',
+    sql: `SELECT id,\n  id % 2 AS is_odd,\n  POWER(id, 2) AS squared,\n  ROUND(SQRT(CAST(id AS FLOAT)), 3)\n    AS root\nFROM measurements;`,
+    desc: '%, POWER, SQRT',
     result: {
       columns: ['id', 'is_odd', 'squared', 'root'],
       rows: [

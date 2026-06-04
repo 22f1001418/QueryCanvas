@@ -45,7 +45,7 @@ const filters = [
     highlight: [2, 3],
   },
   {
-    sql: `SELECT name, name\nFROM employees\nWHERE name LIKE 'A%';`,
+    sql: `SELECT name, department\nFROM employees\nWHERE name LIKE 'A%';`,
     desc: "LIKE: name starts with 'A'",
     detail: 'LIKE matches patterns. % is a wildcard for any characters. "A%" means names starting with A. You can also use %text%, _char, etc.',
     test: (row: (string | number | null)[]) => (row[1] as string).startsWith('A'),

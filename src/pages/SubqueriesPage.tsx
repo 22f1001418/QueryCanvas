@@ -16,8 +16,12 @@ interface SubStep {
   outerRows: number[];
   filterVisibleCols?: number[];
   resultVisibleCols?: number[];
-  // Derived-table mode: show a custom table in the filter panel instead of employees
-  filterMode?: 'derived';
+  panel1Title?: string;
+  panel2Title?: string;
+  panel2Desc?: string;
+  // 'derived' — show a custom derived table in panel 2 instead of employees
+  // 'select-scalar' — scalar runs once and is injected into every row (no filtering)
+  filterMode?: 'derived' | 'select-scalar';
   derivedFilterTable?: { name: string; columns: string[]; rows: (string | number | null)[][] };
   derivedPassRows?: number[];
   finalResult?: { columns: string[]; rows: (string | number | null)[][] };
@@ -37,8 +41,33 @@ const deptAvgTable = {
 
 const subSteps: SubStep[] = [
   {
-    sql: `-- Scalar subquery\nSELECT name, salary\nFROM employees\nWHERE salary > (\n  SELECT AVG(salary)\n  FROM employees\n);`,
-    desc: 'Scalar subquery — filter by average',
+    sql: `-- Scalar subquery in SELECT\nSELECT name,\n       salary,\n       (SELECT AVG(salary)\n        FROM employees) AS company_avg,\n       salary - (SELECT AVG(salary)\n                 FROM employees) AS diff\nFROM employees;`,
+    desc: 'Scalar in SELECT — computed once, stamped on every row',
+    innerResult: { columns: ['AVG(salary)'], rows: [[79875]] },
+    outerRows: [0, 1, 2, 3, 4, 5, 6, 7],
+    innerDesc: 'Scalar runs once → returns 79,875',
+    filterMode: 'select-scalar',
+    filterVisibleCols: [1, 3],
+    panel1Title: '① Scalar (runs once)',
+    panel2Title: '② Injected Into Every Row',
+    panel2Desc: 'The single value 79,875 is stamped onto each row as a new column',
+    finalResult: {
+      columns: ['name', 'salary', 'company_avg', 'diff'],
+      rows: [
+        ['Alice',  95000, 79875,  15125],
+        ['Bob',    88000, 79875,   8125],
+        ['Carol',  72000, 79875,  -7875],
+        ['Dave',   68000, 79875, -11875],
+        ['Eve',    78000, 79875,  -1875],
+        ['Frank',  65000, 79875, -14875],
+        ['Grace', 102000, 79875,  22125],
+        ['Hank',   71000, 79875,  -8875],
+      ],
+    },
+  },
+  {
+    sql: `-- Scalar subquery in WHERE\nSELECT name, salary\nFROM employees\nWHERE salary > (\n  SELECT AVG(salary)\n  FROM employees\n);`,
+    desc: 'Scalar subquery in WHERE — filter by average',
     innerResult: { columns: ['AVG(salary)'], rows: [[79875]] },
     outerRows: [0, 1, 6],
     innerDesc: 'Inner query returns: 79,875',
@@ -123,7 +152,7 @@ export function SubqueriesPage() {
       <div>
         <h1 className="text-xl font-semibold text-text-primary">Subqueries</h1>
         <p className="text-sm text-text-secondary mt-1">
-          Nest queries inside other queries — scalar, IN, NOT IN, correlated, and derived table subqueries.
+          Nest queries inside other queries — scalar in SELECT, scalar in WHERE, IN, NOT IN, correlated, and derived table subqueries.
         </p>
       </div>
 
@@ -141,7 +170,13 @@ export function SubqueriesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Panel 1: Inner query / derived table result */}
         <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
-          <MacWindow title={current.filterMode === 'derived' ? '① Derived Table' : '① Inner Query Result'} compact>
+          <MacWindow
+            title={
+              current.panel1Title ??
+              (current.filterMode === 'derived' ? '① Derived Table' : '① Inner Query Result')
+            }
+            compact
+          >
             <div className="p-3">
               <div className="text-[11px] text-accent font-medium mb-2">{current.innerDesc}</div>
               <SqlTable
@@ -152,10 +187,13 @@ export function SubqueriesPage() {
           </MacWindow>
         </motion.div>
 
-        {/* Panel 2: Filter applied */}
+        {/* Panel 2: Filter applied / value injection */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <MacWindow title="② Filter Applied" compact>
+          <MacWindow title={current.panel2Title ?? '② Filter Applied'} compact>
             <div className="p-3">
+              {current.panel2Desc && (
+                <div className="text-[11px] text-accent font-medium mb-2">{current.panel2Desc}</div>
+              )}
               {current.filterMode === 'derived' && current.derivedFilterTable ? (
                 <SqlTable
                   table={current.derivedFilterTable}

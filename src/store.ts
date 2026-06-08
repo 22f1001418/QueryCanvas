@@ -5,7 +5,8 @@ export type PageId =
   | 'groupby' | 'joins' | 'subqueries'
   | 'window' | 'case' | 'cte'
   | 'aggregations' | 'sets'
-  | 'datacleaning' | 'stringfns' | 'numericfns' | 'datefns';
+  | 'datacleaning' | 'stringfns' | 'numericfns' | 'datefns'
+  | 'exists';
 
 export interface NavItem {
   id: PageId;
@@ -46,7 +47,11 @@ export const navItems: NavItem[] = [
   },
   {
     id: 'subqueries', label: 'Subqueries', icon: 'GitBranch', category: 'Advanced SQL',
-    subtopics: ['Scalar subquery', 'Column subquery', 'Correlated subquery', 'EXISTS'],
+    subtopics: ['Scalar subquery', 'Column subquery', 'Correlated subquery', 'Derived table'],
+  },
+  {
+    id: 'exists', label: 'EXISTS', icon: 'Search', category: 'Advanced SQL',
+    subtopics: ['EXISTS', 'NOT EXISTS', 'EXISTS with condition', 'EXISTS vs IN', 'NOT EXISTS vs NOT IN'],
   },
   {
     id: 'cte', label: 'CTEs', icon: 'Workflow', category: 'Advanced SQL',

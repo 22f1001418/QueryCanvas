@@ -27,6 +27,20 @@ interface SubStep {
   finalResult?: { columns: string[]; rows: (string | number | null)[][] };
 }
 
+// Salaries table used for EXISTS demos.
+// Alice(1), Bob(2), Carol(3), Eve(5), Grace(7) have records; Dave(4), Frank(6), Hank(8) do not.
+const salariesTable = {
+  name: 'salaries',
+  columns: ['employee_id', 'salary'],
+  rows: [
+    [1, 95000],
+    [2, 88000],
+    [3, 72000],
+    [5, 78000],
+    [7, 102000],
+  ] as (string | number | null)[][],
+};
+
 // Derived table data (dept averages): Engineering=95000, Marketing=70000, Sales=71500, HR=71000
 const deptAvgTable = {
   name: 'dept_avg',
@@ -94,6 +108,54 @@ const subSteps: SubStep[] = [
     resultVisibleCols: [1, 2],
   },
   {
+    sql: `-- EXISTS subquery\nSELECT name, department\nFROM employees e\nWHERE EXISTS (\n  SELECT 1\n  FROM salaries s\n  WHERE s.employee_id = e.employee_id\n);`,
+    desc: 'EXISTS — keep employees who have a salary record',
+    innerResult: salariesTable,
+    innerDesc: 'Runs once per outer row — TRUE if ≥ 1 row found',
+    outerRows: [0, 1, 2, 4, 6],
+    panel1Title: '① Salaries table (inner)',
+    panel2Title: '② EXISTS result per employee',
+    panel2Desc: 'Green = EXISTS TRUE (found in salaries) · Gray = EXISTS FALSE',
+    filterVisibleCols: [0, 1, 2],
+    finalResult: {
+      columns: ['name', 'department'],
+      rows: [['Alice', 'Engineering'], ['Bob', 'Engineering'], ['Carol', 'Marketing'], ['Eve', 'Sales'], ['Grace', 'Engineering']],
+    },
+  },
+  {
+    sql: `-- NOT EXISTS subquery\nSELECT name, department\nFROM employees e\nWHERE NOT EXISTS (\n  SELECT 1\n  FROM salaries s\n  WHERE s.employee_id = e.employee_id\n);`,
+    desc: 'NOT EXISTS — keep employees with no salary record',
+    innerResult: salariesTable,
+    innerDesc: 'Runs once per outer row — TRUE if NO row found',
+    outerRows: [3, 5, 7],
+    panel1Title: '① Salaries table (inner)',
+    panel2Title: '② NOT EXISTS result per employee',
+    panel2Desc: 'Green = NOT EXISTS TRUE (absent from salaries) · Gray = FALSE',
+    filterVisibleCols: [0, 1, 2],
+    finalResult: {
+      columns: ['name', 'department'],
+      rows: [['Dave', 'Marketing'], ['Frank', 'Sales'], ['Hank', 'HR']],
+    },
+  },
+  {
+    sql: `-- EXISTS with condition\nSELECT name, department\nFROM employees e\nWHERE EXISTS (\n  SELECT 1\n  FROM salaries s\n  WHERE s.employee_id = e.employee_id\n    AND s.salary > 90000\n);`,
+    desc: 'EXISTS + condition — employees earning over 90,000',
+    innerResult: {
+      columns: ['employee_id', 'salary'],
+      rows: [[1, 95000], [7, 102000]],
+    },
+    innerDesc: 'Only salary > 90,000 rows count as a match',
+    outerRows: [0, 6],
+    panel1Title: '① Matching salary rows (salary > 90k)',
+    panel2Title: '② EXISTS result per employee',
+    panel2Desc: 'Green = EXISTS TRUE (salary record > 90,000 found)',
+    filterVisibleCols: [0, 1, 2],
+    finalResult: {
+      columns: ['name', 'department'],
+      rows: [['Alice', 'Engineering'], ['Grace', 'Engineering']],
+    },
+  },
+  {
     sql: `-- Correlated subquery\nSELECT e1.name, e1.salary,\n  e1.department\nFROM employees e1\nWHERE e1.salary = (\n  SELECT MAX(e2.salary)\n  FROM employees e2\n  WHERE e2.department =\n        e1.department\n);`,
     desc: 'Correlated — max salary per dept',
     innerResult: { columns: ['name', 'salary', 'department'], rows: [['Grace', 102000, 'Engineering'], ['Carol', 72000, 'Marketing'], ['Eve', 78000, 'Sales'], ['Hank', 71000, 'HR']] },
@@ -152,7 +214,7 @@ export function SubqueriesPage() {
       <div>
         <h1 className="text-xl font-semibold text-text-primary">Subqueries</h1>
         <p className="text-sm text-text-secondary mt-1">
-          Nest queries inside other queries — scalar in SELECT, scalar in WHERE, IN, NOT IN, correlated, and derived table subqueries.
+          Nest queries inside other queries — scalar in SELECT/WHERE, IN, NOT IN, EXISTS, NOT EXISTS, correlated, and derived table.
         </p>
       </div>
 

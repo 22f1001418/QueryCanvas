@@ -18,6 +18,7 @@ import { DataCleaningPage } from './pages/DataCleaningPage';
 import { StringFnsPage } from './pages/StringFnsPage';
 import { NumericFnsPage } from './pages/NumericFnsPage';
 import { DateFnsPage } from './pages/DateFnsPage';
+import { ExistsPage } from './pages/ExistsPage';
 
 const pageComponents: Record<string, React.ComponentType> = {
   select: SelectPage,
@@ -35,6 +36,7 @@ const pageComponents: Record<string, React.ComponentType> = {
   stringfns: StringFnsPage,
   numericfns: NumericFnsPage,
   datefns: DateFnsPage,
+  exists: ExistsPage,
 };
 
 export default function App() {
